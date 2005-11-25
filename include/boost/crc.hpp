@@ -349,8 +349,12 @@ namespace detail
 #else
         BOOST_STATIC_CONSTANT( least, sig_bits = (~( ~(least( 0u )) << Bits )) );
 #endif
+#if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ == 0 && __GNUC_PATCHLEVEL__ == 2
+	// Work around a weird bug that ICEs the compiler in build_c_cast
+        BOOST_STATIC_CONSTANT( fast, sig_bits_fast = static_cast<fast>(sig_bits) );
+#else
         BOOST_STATIC_CONSTANT( fast, sig_bits_fast = fast(sig_bits) );
-
+#endif
     };  // boost::detail::mask_uint_t
 
     template <  >
