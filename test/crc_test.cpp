@@ -185,7 +185,7 @@ PRIVATE_TESTER_NAME::error_test
     // to give the truncated polynominal, and it is always set.  This
     // means that the truncated polynominal needs at least one of its
     // bits set, which implies that it cannot be zero.
-    if ( !(TrPo & boost::detail::mask_uint_t<Bits>::sig_bits_fast) )
+    if ( !(TrPo & boost::detail::low_bits_mask_c<Bits>::value) )
     {
         BOOST_FAIL( "truncated CRC polymonial is zero" );
     }
@@ -456,12 +456,12 @@ timing_test
      quick_result, ran_data, sizeof(ran_data) );
 
     // Report results
-    cout << "\tThe optimal Boost version is " << (quick_rate - optimal_rate)
-     / quick_rate * 100.0 << "% slower than the reference version.\n";
-    cout << "\tThe basic Boost version is " << (quick_rate - basic_rate)
-     / quick_rate * 100.0 << "% slower than the reference version.\n";
-    cout << "\tThe basic Boost version is " << (optimal_rate - basic_rate)
-     / optimal_rate * 100.0 << "% slower than the optimal Boost version."
+    cout << "\tThe optimal Boost version has " << optimal_rate / quick_rate *
+     100.0 << "% the speed of the reference version.\n";
+    cout << "\tThe basic Boost version has " << basic_rate / quick_rate * 100.0
+     << "% the speed of the reference version.\n";
+    cout << "\tThe basic Boost version has " << basic_rate / optimal_rate *
+     100.0 << "% the speed of the optimal Boost version."
      << endl;
 }
 
