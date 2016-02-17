@@ -1774,7 +1774,7 @@ crc_basic<Bits>::process_bits
     unsigned char const  high_bit_mask = 1u << ( CHAR_BIT - 1u );
     for ( std::size_t i = bit_length ; i > 0u ; --i, bits <<= 1u )
     {
-        process_bit( static_cast<bool>(bits & high_bit_mask) );
+      process_bit(static_cast<bool>((bits & high_bit_mask) > 0u));
     }
 }
 
