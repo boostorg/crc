@@ -37,3 +37,14 @@ boostbook standalone
         <xsl:param>chunk.first.sections=1
         <dependency>autodoc
    ;
+
+###############################################################################
+alias boostdoc
+    : crc
+    :
+    : <dependency>autodoc
+    : ;
+explicit boostdoc ;
+alias boostrelease ;
+explicit boostrelease ;
+   
