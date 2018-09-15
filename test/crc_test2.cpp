@@ -7,18 +7,12 @@
 
 //  See <http://www.boost.org/libs/crc/> for the library's home page.
 
-#define BOOST_TEST_MODULE CRC Unit Test
-#include <boost/test/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <boost/crc.hpp>   // for boost::crc_basic,crc_optimal,augmented_crc,crc
 
 #include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
-#include <boost/detail/endian.hpp>                       // for BOOST_BIG_ENDIAN
+#include <boost/predef/other/endian.h>
 #include <boost/integer.hpp>                                // for boost::uint_t
-#include <boost/mpl/bool.hpp>                            // for boost::mpl:bool_
-#include <boost/mpl/integral_c.hpp>                // for boost::mpl::integral_c
-#include <boost/mpl/list.hpp>                            // for boost::mpl::list
-#include <boost/mpl/size_t.hpp>                        // for boost::mpl::size_t
 #include <boost/typeof/typeof.hpp>                             // for BOOST_AUTO
 #include <boost/random/linear_congruential.hpp>        // for boost::minstd_rand
 
@@ -54,7 +48,7 @@ boost::uint16_t const  std_crc_16_result = 0xBB3Du;
 boost::uint32_t const  std_crc_32_result = 0xCBF43926ul;
 
 // Conversion functions between native- and big-endian representations
-#ifdef BOOST_BIG_ENDIAN
+#if BOOST_ENDIAN_BIG_BYTE
 boost::uint32_t  native_to_big( boost::uint32_t x )  { return x; }
 boost::uint32_t  big_to_native( boost::uint32_t x )  { return x; }
 #else
@@ -97,7 +91,7 @@ template < std::size_t Bits >
 class my_crc_rt_traits
 {
 public:
-    typedef boost::mpl::size_t<Bits>            register_length_c;
+    typedef boost::integral_constant<std::size_t, Bits>            register_length_c;
     typedef typename boost::uint_t<Bits>::fast  register_type;
     typedef boost::crc_basic<Bits>              computer_type;
 
@@ -123,15 +117,15 @@ public:
     typedef boost::crc_optimal<Bits, DivisorPolynominal, InitialRemainder,
      FinalXorMask, ReflectInputBytes, ReflectOutputRemainder>  computer_type;
 
-    typedef boost::mpl::size_t<Bits>  register_length_c;
-    typedef boost::mpl::integral_c<register_type, DivisorPolynominal>
+    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef boost::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::mpl::integral_c<register_type, InitialRemainder>
+    typedef boost::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::mpl::bool_<ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::mpl::bool_<ReflectOutputRemainder>
+    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef boost::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::mpl::integral_c<register_type, FinalXorMask>
+    typedef boost::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
 
     operator rt_adaptor_type() const
@@ -163,17 +157,17 @@ public:
 
     typedef typename rt_traits_type::register_type  register_type;
 
-    typedef boost::mpl::size_t<Bits>  register_length_c;
-    typedef boost::mpl::integral_c<register_type, DivisorPolynominal>
+    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef boost::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::mpl::integral_c<register_type, InitialRemainder>
+    typedef boost::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::mpl::bool_<ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::mpl::bool_<ReflectOutputRemainder>
+    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef boost::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::mpl::integral_c<register_type, FinalXorMask>
+    typedef boost::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
-    typedef boost::mpl::integral_c<register_type, StandardTestDataResult>
+    typedef boost::integral_constant<register_type, StandardTestDataResult>
       standard_test_data_CRC_c;
 
     typedef typename ct_traits_type::computer_type  computer_ct_type;
@@ -197,9 +191,15 @@ typedef my_crc_test_traits<16u, 0x1021u, 0u, false, false, 0u,
 typedef my_crc_test_traits<32u, 0x04C11DB7ul, 0xFFFFFFFFul, true, true,
  0xFFFFFFFFul, std_crc_32_result>  my_crc_32_traits;
 
-typedef boost::mpl::list<my_crc_16_traits, my_crc_ccitt_false_traits,
- my_crc_ccitt_true_traits, my_crc_xmodem_traits, my_crc_32_traits>
-  crc_test_policies;
+template<class Test>
+void run_crc_test_policies()
+{
+    Test()(my_crc_16_traits());
+    Test()(my_crc_ccitt_false_traits());
+    Test()(my_crc_ccitt_true_traits());
+    Test()(my_crc_xmodem_traits());
+    Test()(my_crc_32_traits());
+}
 
 // Need to test when ReflectInputBytes and ReflectOutputRemainder differ
 // (Grabbed from table at <http://regregex.bbcmicro.net/crc-catalogue.htm>.)
@@ -208,12 +208,19 @@ typedef my_crc_test_traits<6u, 0x19u, 0u, true, false, 0u, 0x19u>
 typedef my_crc_test_traits<12u, 0x80Fu, 0u, false, true, 0u, 0xDAFu>
   my_crc_12_3gpp_traits;
 
-typedef boost::mpl::list<my_crc_16_traits, my_crc_ccitt_false_traits
- , my_crc_ccitt_true_traits, my_crc_xmodem_traits, my_crc_32_traits
+template<class Test>
+void run_crc_extended_test_policies()
+{
+    Test()(my_crc_16_traits());
+    Test()(my_crc_ccitt_false_traits());
+    Test()(my_crc_ccitt_true_traits());
+    Test()(my_crc_xmodem_traits());
+    Test()(my_crc_32_traits());
 #if CONTROL_SUB_BYTE_MISMATCHED_REFLECTION_TEST
- , my_crc_6_darc_traits
+    Test()(my_crc_6_darc_traits());
 #endif
- , my_crc_12_3gpp_traits>  crc_extended_test_policies;
+    Test()(my_crc_12_3gpp_traits());
+}
 
 // Bit mask constants
 template < std::size_t BitIndex >
@@ -230,10 +237,9 @@ struct low_bits_mask_c
 
 // Unit tests  ---------------------------------------------------------------//
 
-BOOST_AUTO_TEST_SUITE( unaugmented_octet_crc_tests )
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( computation_comparison_test, CRCPolicy,
- /*crc_test_policies*/crc_extended_test_policies )
+struct computation_comparison_test {
+template<class CRCPolicy>
+void operator()(CRCPolicy)
 {
     BOOST_AUTO( crc_f, CRCPolicy::make_crc_optimal() );
     BOOST_AUTO( crc_s, CRCPolicy::make_crc_basic() );
@@ -248,16 +254,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( computation_comparison_test, CRCPolicy,
     crc_f.process_bytes( std_data, std_data_len );
     crc_s.process_bytes( std_data, std_data_len );
 
-    BOOST_CHECK_EQUAL( crc_f.checksum(),
+    BOOST_TEST_EQ( crc_f.checksum(),
      CRCPolicy::standard_test_data_CRC_c::value );
-    BOOST_CHECK_EQUAL( crc_s.checksum(),
+    BOOST_TEST_EQ( crc_s.checksum(),
      CRCPolicy::standard_test_data_CRC_c::value );
-    BOOST_CHECK_EQUAL( CRCPolicy::standard_test_data_CRC_c::value,
+    BOOST_TEST_EQ( CRCPolicy::standard_test_data_CRC_c::value,
      func_result );
 }
+};
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( accessor_and_split_run_test, CRCPolicy,
- crc_test_policies )
+struct accessor_and_split_run_test {
+template<class CRCPolicy>
+void operator()(CRCPolicy)
 {
     typedef typename CRCPolicy::computer_ct_type  optimal_crc_type;
     typedef typename CRCPolicy::computer_rt_type    basic_crc_type;
@@ -268,7 +276,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessor_and_split_run_test, CRCPolicy,
      faster_crc1.get_initial_remainder(), faster_crc1.get_final_xor_value(),
      faster_crc1.get_reflect_input(), faster_crc1.get_reflect_remainder() );
 
-    BOOST_CHECK_EQUAL( faster_crc1.get_interim_remainder(),
+    BOOST_TEST_EQ( faster_crc1.get_interim_remainder(),
      slower_crc1.get_initial_remainder() );
 
     // Process the first half of the standard data
@@ -277,7 +285,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessor_and_split_run_test, CRCPolicy,
     faster_crc1.process_bytes( std_data, mid_way );
     slower_crc1.process_bytes( std_data, mid_way );
 
-    BOOST_CHECK_EQUAL( faster_crc1.checksum(), slower_crc1.checksum() );
+    BOOST_TEST_EQ( faster_crc1.checksum(), slower_crc1.checksum() );
 
     // Process the second half of the standard data, testing more accessors
     unsigned char const * const  std_data_end = std_data + std_data_len;
@@ -294,21 +302,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( accessor_and_split_run_test, CRCPolicy,
     faster_crc2.process_block( std_data + mid_way, std_data_end );
     slower_crc2.process_block( std_data + mid_way, std_data_end );
 
-    BOOST_CHECK_EQUAL( slower_crc2.checksum(), faster_crc2.checksum() );
-    BOOST_CHECK_EQUAL( faster_crc2.checksum(),
+    BOOST_TEST_EQ( slower_crc2.checksum(), faster_crc2.checksum() );
+    BOOST_TEST_EQ( faster_crc2.checksum(),
      CRCPolicy::standard_test_data_CRC_c::value );
-    BOOST_CHECK_EQUAL( CRCPolicy::standard_test_data_CRC_c::value,
+    BOOST_TEST_EQ( CRCPolicy::standard_test_data_CRC_c::value,
      slower_crc2.checksum() );
 }
+};
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( reset_and_single_bit_error_test, CRCPolicy,
- crc_test_policies )
+struct reset_and_single_bit_error_test {
+template<class CRCPolicy>
+void operator()(CRCPolicy)
 {
     // A single-bit error in a CRC can be guaranteed to be detected if the
     // modulo-2 polynomial divisor has at least two non-zero coefficients.  The
     // implicit highest coefficient is always one, so that leaves an explicit
     // coefficient, i.e. at least one of the polynomial's bits is set.
-    BOOST_REQUIRE( CRCPolicy::divisor_polynominal_c::value &
+    BOOST_TEST( CRCPolicy::divisor_polynominal_c::value &
      low_bits_mask_c<CRCPolicy::register_length_c::value>::value );
 
     // Create a random block of data
@@ -327,7 +337,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reset_and_single_bit_error_test, CRCPolicy,
     BOOST_AUTO( const optimal_checksum, optimal_tester.checksum() );
     BOOST_AUTO( const basic_checksum, basic_tester.checksum() );
 
-    BOOST_CHECK_EQUAL( optimal_checksum, basic_checksum );
+    BOOST_TEST_EQ( optimal_checksum, basic_checksum );
 
     // Do the checksum again, while testing the capability to reset the current
     // remainder (to either a default or a given value)
@@ -337,9 +347,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reset_and_single_bit_error_test, CRCPolicy,
     optimal_tester.process_bytes( ran_data, sizeof(ran_data) );
     basic_tester.process_bytes( ran_data, sizeof(ran_data) );
 
-    BOOST_CHECK_EQUAL( optimal_tester.checksum(), basic_tester.checksum() );
-    BOOST_CHECK_EQUAL( optimal_tester.checksum(), optimal_checksum );
-    BOOST_CHECK_EQUAL( basic_tester.checksum(), basic_checksum );
+    BOOST_TEST_EQ( optimal_tester.checksum(), basic_tester.checksum() );
+    BOOST_TEST_EQ( optimal_tester.checksum(), optimal_checksum );
+    BOOST_TEST_EQ( basic_tester.checksum(), basic_checksum );
 
     // Introduce a single-bit error
     ran_data[ ran_data[0] % ran_length ] ^= ( 1u << (ran_data[ 1 ] % 32u) );
@@ -352,14 +362,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( reset_and_single_bit_error_test, CRCPolicy,
     optimal_tester.process_bytes( ran_data, sizeof(ran_data) );
     basic_tester.process_bytes( ran_data, sizeof(ran_data) );
 
-    BOOST_CHECK_EQUAL( basic_tester.checksum(), optimal_tester.checksum() );
-    BOOST_CHECK_NE( optimal_checksum, optimal_tester.checksum() );
-    BOOST_CHECK_NE( basic_checksum, basic_tester.checksum() );
+    BOOST_TEST_EQ( basic_tester.checksum(), optimal_tester.checksum() );
+    BOOST_TEST_NE( optimal_checksum, optimal_tester.checksum() );
+    BOOST_TEST_NE( basic_checksum, basic_tester.checksum() );
 }
+};
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_CASE( augmented_crc_test )
+void augmented_crc_test()
 {
     using std::size_t;
     using boost::uint32_t;
@@ -386,21 +395,21 @@ BOOST_AUTO_TEST_CASE( augmented_crc_test )
     uint32_t const  checksum = boost::crc<bits, poly, 0u, 0u, false, false>(
      run_data, data_size );
 
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(run_data, sizeof( run_data
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(run_data, sizeof( run_data
      )), checksum );
 
     // Now appending a message's CRC to the message should lead to a zero-value
     // checksum.  Note that the CRC must be read from the largest byte on down,
     // i.e. big-endian!
     run_crc = native_to_big( checksum );
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(run_data, sizeof( run_data
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(run_data, sizeof( run_data
      )), 0u );
 
     // Check again with the non-augmented methods
     boost::crc_basic<bits>  crc_b( poly );
 
     crc_b.process_bytes( run_data, data_size );
-    BOOST_CHECK_EQUAL( crc_b.checksum(), checksum );
+    BOOST_TEST_EQ( crc_b.checksum(), checksum );
 
     // Introduce a single-bit error, now the checksum shouldn't match!
     uint32_t const  affected_word_index = run_data[ 0 ] % data_length;
@@ -411,19 +420,19 @@ BOOST_AUTO_TEST_CASE( augmented_crc_test )
 
     crc_b.reset();
     crc_b.process_bytes( run_data, data_size );
-    BOOST_CHECK_NE( crc_b.checksum(), checksum );
+    BOOST_TEST_NE( crc_b.checksum(), checksum );
 
-    BOOST_CHECK_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
+    BOOST_TEST_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
      0u );
 
     run_crc = 0u;
-    BOOST_CHECK_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
+    BOOST_TEST_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
      checksum );
 
     // Now introduce the single error in the checksum instead
     run_data[ affected_word_index ] ^= affecting_mask;
     run_crc = native_to_big( checksum ) ^ affecting_mask;
-    BOOST_CHECK_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
+    BOOST_TEST_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data )),
      0u );
 
     // Repeat these tests with a non-zero initial remainder.  Before we can
@@ -442,16 +451,16 @@ BOOST_AUTO_TEST_CASE( augmented_crc_test )
     uint32_t const  initial_residue_unaugmented = augmented_crc<bits, poly>(
                      &run_crc, sizeof(run_crc), initial_residue );
 
-    BOOST_REQUIRE_NE( initial_residue, 0u );
+    BOOST_TEST_NE( initial_residue, 0u );
     crc_b.reset( initial_residue_unaugmented );
     crc_b.process_bytes( run_data, data_size );
     checksum2 = crc_b.checksum();
 
-    BOOST_REQUIRE_EQUAL( run_crc, 0u );
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
+    BOOST_TEST_EQ( run_crc, 0u );
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
      initial_residue), checksum2 );
     run_crc = native_to_big( checksum2 );
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
      initial_residue), 0u );
 
     // Use the inital remainder argument to split a CRC-computing run
@@ -459,21 +468,19 @@ BOOST_AUTO_TEST_CASE( augmented_crc_test )
     uint32_t const  intermediate = augmented_crc<bits, poly>( run_data,
                      sizeof(run_crc) * split_index, initial_residue );
 
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(&run_data[ split_index ],
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(&run_data[ split_index ],
      sizeof( run_data ) - sizeof( run_crc ) * split_index, intermediate), 0u );
     run_crc = 0u;
-    BOOST_CHECK_EQUAL( (augmented_crc<bits, poly>)(&run_data[ split_index ],
+    BOOST_TEST_EQ( (augmented_crc<bits, poly>)(&run_data[ split_index ],
      sizeof( run_data ) - sizeof( run_crc ) * split_index, intermediate),
      checksum2 );
 
     // Repeat the single-bit error test, with a non-zero initial-remainder
     run_data[ run_data[3] % data_length ] ^= ( 1ul << (run_data[4] % 32u) );
     run_crc = native_to_big( checksum2 );
-    BOOST_CHECK_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
+    BOOST_TEST_NE( (augmented_crc<bits, poly>)(run_data, sizeof( run_data ),
      initial_residue), 0u );
 }
-
-BOOST_AUTO_TEST_SUITE ( sub_octet_crc_tests )
     
 // Optimal computer, via the single-run function
 unsigned crc_f1( const void * buffer, std::size_t byte_count )
@@ -481,7 +488,7 @@ unsigned crc_f1( const void * buffer, std::size_t byte_count )
     return boost::crc<3u, 0x03u, 0u, 0u, false, false>( buffer, byte_count );
 }
 
-BOOST_AUTO_TEST_CASE( sub_nybble_polynominal_test )
+void sub_nybble_polynominal_test()
 {
     // The CRC standard is a SDH/SONET Low Order LCAS control word with CRC-3
     // taken from ITU-T G.707 (12/03) XIII.2.
@@ -499,24 +506,24 @@ BOOST_AUTO_TEST_CASE( sub_nybble_polynominal_test )
     boost::crc_basic<3u>  crc_1( 0x03u );
 
     crc_1.process_bytes( samples[0], 4u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), 0u );
+    BOOST_TEST_EQ( crc_1.checksum(), 0u );
 
     crc_1.reset();
     crc_1.process_bytes( samples[1], 4u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), 0u );
+    BOOST_TEST_EQ( crc_1.checksum(), 0u );
 
     crc_1.reset();
     crc_1.process_bytes( samples[2], 4u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), 0u );
+    BOOST_TEST_EQ( crc_1.checksum(), 0u );
 
     crc_1.reset();
     crc_1.process_bytes( samples[3], 4u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), 0u );
+    BOOST_TEST_EQ( crc_1.checksum(), 0u );
 
-    BOOST_CHECK_EQUAL( crc_f1(samples[ 0 ], 4u), 0u );
-    BOOST_CHECK_EQUAL( crc_f1(samples[ 1 ], 4u), 0u );
-    BOOST_CHECK_EQUAL( crc_f1(samples[ 2 ], 4u), 0u );
-    BOOST_CHECK_EQUAL( crc_f1(samples[ 3 ], 4u), 0u );
+    BOOST_TEST_EQ( crc_f1(samples[ 0 ], 4u), 0u );
+    BOOST_TEST_EQ( crc_f1(samples[ 1 ], 4u), 0u );
+    BOOST_TEST_EQ( crc_f1(samples[ 2 ], 4u), 0u );
+    BOOST_TEST_EQ( crc_f1(samples[ 3 ], 4u), 0u );
 
     // TODO: do similar tests with boost::augmented_crc<3, 0x03>
     // (Now I think that this can't be done right now, since that function reads
@@ -529,7 +536,7 @@ unsigned crc_f2( const void * buffer, std::size_t byte_count )
     return boost::crc<7u, 0x09u, 0u, 0u, false, false>( buffer, byte_count );
 }
 
-BOOST_AUTO_TEST_CASE( sub_octet_polynominal_test )
+void sub_octet_polynominal_test()
 {
     // The CRC standard is a SDH/SONET J0/J1/J2/N1/N2/TR TTI (trace message)
     // with CRC-7, o.a. ITU-T G.707 Annex B, G.832 Annex A.
@@ -550,28 +557,28 @@ BOOST_AUTO_TEST_CASE( sub_octet_polynominal_test )
     boost::crc_basic<7u>  crc_1( 0x09u );
 
     crc_1.process_bytes( samples[0], 16u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), results[0] );
+    BOOST_TEST_EQ( crc_1.checksum(), results[0] );
 
     crc_1.reset();
     crc_1.process_bytes( samples[1], 16u );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), results[1] );
+    BOOST_TEST_EQ( crc_1.checksum(), results[1] );
 
-    BOOST_CHECK_EQUAL( crc_f2(samples[ 0 ], 16u), results[0] );
-    BOOST_CHECK_EQUAL( crc_f2(samples[ 1 ], 16u), results[1] );
+    BOOST_TEST_EQ( crc_f2(samples[ 0 ], 16u), results[0] );
+    BOOST_TEST_EQ( crc_f2(samples[ 1 ], 16u), results[1] );
 
     // TODO: do similar tests with boost::augmented_crc<7, 0x09>
     // (Now I think that this can't be done right now, since that function reads
     // byte-wise, so the register size needs to be a multiple of CHAR_BIT.)
 }
 
-BOOST_AUTO_TEST_CASE( one_bit_polynominal_test )
+void one_bit_polynominal_test()
 {
     // Try a CRC based on the (x + 1) polynominal, which is a factor in
     // many real-life polynominals and doesn't fit evenly in a byte.
     boost::crc_basic<1u>  crc_1( 1u );
 
     crc_1.process_bytes( std_data, std_data_len );
-    BOOST_CHECK_EQUAL( crc_1.checksum(), 1u );
+    BOOST_TEST_EQ( crc_1.checksum(), 1u );
 
     // Do it again, but using crc_optimal.  The real purpose of this is to test
     // crc_optimal::process_byte, which doesn't get exercised anywhere else in
@@ -580,25 +587,23 @@ BOOST_AUTO_TEST_CASE( one_bit_polynominal_test )
 
     for ( std::size_t  i = 0u ; i < std_data_len ; ++i )
         crc_2.process_byte( std_data[i] );
-    BOOST_CHECK_EQUAL( crc_2.checksum(), 1u );
+    BOOST_TEST_EQ( crc_2.checksum(), 1u );
 }
 
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_CASE_TEMPLATE( function_object_test, CRCPolicy,
- crc_test_policies )
+struct function_object_test {
+template<class CRCPolicy>
+void operator()(CRCPolicy)
 {
     typename CRCPolicy::computer_ct_type  crc_c;
 
     crc_c = std::for_each( std_data, std_data + std_data_len, crc_c );
-    BOOST_CHECK_EQUAL( crc_c(), CRCPolicy::standard_test_data_CRC_c::value );
+    BOOST_TEST_EQ( crc_c(), CRCPolicy::standard_test_data_CRC_c::value );
 }
-
-BOOST_AUTO_TEST_SUITE ( bug_fix_tests )
+};
 
 // Ticket #2492: crc_optimal with reversed CRC16
 // <https://svn.boost.org/trac/boost/ticket/2492>
-BOOST_AUTO_TEST_CASE( issue_2492_test )
+void issue_2492_test()
 {
     // I'm trusting that the original bug reporter got his/her calculations
     // correct.
@@ -609,12 +614,24 @@ BOOST_AUTO_TEST_CASE( issue_2492_test )
 
     // This should be right...
     boost_crc_1.process_byte( 0u );
-    BOOST_CHECK_EQUAL( boost_crc_1.checksum(), expected_result );
+    BOOST_TEST_EQ( boost_crc_1.checksum(), expected_result );
 
     // ...but the reporter said this didn't reflect, giving 0x099F as the
     // (wrong) result.  However, I get the right answer!
     boost_crc_2.process_byte( 0u );
-    BOOST_CHECK_EQUAL( boost_crc_2.checksum(), expected_result );
+    BOOST_TEST_EQ( boost_crc_2.checksum(), expected_result );
 }
 
-BOOST_AUTO_TEST_SUITE_END()
+int main()
+{
+    run_crc_extended_test_policies<computation_comparison_test>();
+    run_crc_test_policies<accessor_and_split_run_test>();
+    run_crc_test_policies<reset_and_single_bit_error_test>();
+    augmented_crc_test();
+    sub_nybble_polynominal_test();
+    sub_octet_polynominal_test();
+    one_bit_polynominal_test();
+    run_crc_test_policies<function_object_test>();
+    issue_2492_test();
+    return boost::report_errors();
+}
