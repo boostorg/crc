@@ -40,9 +40,8 @@
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
 #include <boost/cstdint.hpp>         // for UINTMAX_C, boost::uintmax_t
 #include <boost/integer.hpp>         // for boost::uint_t
-#include <boost/mpl/bool.hpp>        // for boost::mpl::true_, ...false_
-#include <boost/mpl/if.hpp>          // for boost::mpl::if_c
-#include <boost/mpl/integral_c.hpp>  // for boost::mpl::integral_c
+#include <boost/type_traits/conditional.hpp>
+#include <boost/type_traits/integral_constant.hpp>
 
 #include <climits>  // for CHAR_BIT, etc.
 #include <cstddef>  // for std::size_t
@@ -336,7 +335,7 @@ namespace detail
      */
     template < int BitIndex >
     struct high_bit_mask_c
-        : boost::mpl::integral_c<typename boost::uint_t< BitIndex + 1 >::fast,
+        : boost::integral_constant<typename boost::uint_t< BitIndex + 1 >::fast,
            ( UINTMAX_C(1) << BitIndex )>
     {};
 
@@ -355,7 +354,7 @@ namespace detail
      */
     template < int BitCount >
     struct low_bits_mask_c
-        : boost::mpl::integral_c<typename boost::uint_t< BitCount >::fast, (
+        : boost::integral_constant<typename boost::uint_t< BitCount >::fast, (
            BitCount ? (( (( UINTMAX_C(1) << (BitCount - 1) ) - 1u) << 1 ) |
            UINTMAX_C( 1 )) : 0u )>
     {};
@@ -750,16 +749,16 @@ namespace detail
     public:
         /** \brief  The type to check for specialization
 
-            This is a Boost.MPL integral constant indicating that this class
+            This is a Boost integral constant indicating that this class
             does not reflect its input values.
          */
-        typedef boost::mpl::false_                 is_reflecting_type;
+        typedef boost::false_type                 is_reflecting_type;
         /** \brief  The type to check for register bit length
 
-            This is a Boost.MPL integral constant indicating how many
+            This is a Boost integral constant indicating how many
             significant bits won't actually be reflected.
          */
-        typedef boost::mpl::integral_c< int, BitLength >      width_c;
+        typedef boost::integral_constant< int, BitLength >      width_c;
         /** \brief  The type of (not-)reflected values
 
             This type is the input and output type for the (possible-)
@@ -797,16 +796,16 @@ namespace detail
     public:
         /** \brief  The type to check for specialization
 
-            This is a Boost.MPL integral constant indicating that this class
+            This is a Boost integral constant indicating that this class
             does reflect its input values.
          */
-        typedef boost::mpl::true_                  is_reflecting_type;
+        typedef boost::true_type                  is_reflecting_type;
         /** \brief  The type to check for register bit length
 
-            This is a Boost.MPL integral constant indicating how many
+            This is a Boost integral constant indicating how many
             significant bits will be reflected.
          */
-        typedef boost::mpl::integral_c< int, BitLength >      width_c;
+        typedef boost::integral_constant< int, BitLength >      width_c;
         /** \brief  The type of reflected values
 
             This is both the input and output type for the reflection function.
@@ -846,16 +845,16 @@ namespace detail
     public:
         /** \brief  The type to check for specialization
 
-            This is a Boost.MPL integral constant indicating that this class
+            This is a Boost integral constant indicating that this class
             does reflect its input values.
          */
-        typedef boost::mpl::true_              is_reflecting_type;
+        typedef boost::true_type              is_reflecting_type;
         /** \brief  The type to check for register bit length
 
-            This is a Boost.MPL integral constant indicating how many
+            This is a Boost integral constant indicating how many
             significant bits will be reflected.
          */
-        typedef boost::mpl::integral_c< int, BitLength >  width_c;
+        typedef boost::integral_constant< int, BitLength >  width_c;
         /** \brief  The type of reflected values
 
             This is both the input and output type for the reflection function.
@@ -891,7 +890,7 @@ namespace detail
      */
     template < int BitLength >
     class reflector
-        : public boost::mpl::if_c< (BitLength > CHAR_BIT),
+        : public boost::conditional< (BitLength > CHAR_BIT),
           super_byte_reflector<BitLength>, sub_type_reflector<BitLength> >::type
     { };
 
@@ -910,16 +909,16 @@ namespace detail
      */
     template < int BitLength, bool DoIt, int Id >
     class possible_reflector
-        : public boost::mpl::if_c< DoIt, reflector<BitLength>,
+        : public boost::conditional< DoIt, reflector<BitLength>,
           non_reflector<BitLength> >::type
     {
     public:
         /** \brief  The type to check for ID
 
-            This is a Boost.MPL integral constant indicating what ID number this
+            This is a Boost integral constant indicating what ID number this
             instantiation used.
          */
-        typedef boost::mpl::integral_c<int, Id>  id_type;
+        typedef boost::integral_constant<int, Id>  id_type;
     };
 
     /** \brief  Find the composite remainder update effect from a fixed bit
@@ -1012,16 +1011,16 @@ namespace detail
     public:
         /** \brief  The type to check for register bit length
 
-            This is a Boost.MPL integral constant indicating how many
+            This is a Boost integral constant indicating how many
             significant bits are in the remainder and (truncated) divisor.
          */
-        typedef boost::mpl::integral_c< int, Order >              width_c;
+        typedef boost::integral_constant< int, Order >              width_c;
         /** \brief  The type to check for index-unit bit length
 
-            This is a Boost.MPL integral constant indicating how many
+            This is a Boost integral constant indicating how many
             significant bits are in the trial new dividends.
          */
-        typedef boost::mpl::integral_c< int, SubOrder >      unit_width_c;
+        typedef boost::integral_constant< int, SubOrder >      unit_width_c;
         /** \brief  The type of registers
 
             This is the output type for the partial-product map.
@@ -1029,20 +1028,20 @@ namespace detail
         typedef typename boost::uint_t< Order >::fast          value_type;
         /** \brief  The type to check the divisor
 
-            This is a Boost.MPL integral constant representing the (truncated)
+            This is a Boost integral constant representing the (truncated)
             divisor.
          */
-        typedef boost::mpl::integral_c< value_type, TruncatedPolynomial >
+        typedef boost::integral_constant< value_type, TruncatedPolynomial >
           poly_c;
         /** \brief  The type to check for reflection
 
-            This is a Boost.MPL integral constant representing whether input
+            This is a Boost integral constant representing whether input
             units should be read in reverse order.
          */
-        typedef boost::mpl::integral_c< bool, Reflect >           refin_c;
+        typedef boost::integral_constant< bool, Reflect >           refin_c;
         /** \brief  The type to check for map size
 
-            This is a Boost.MPL integral constant representing the number of
+            This is a Boost integral constant representing the number of
             elements in the partial-product map, based on the unit size.
          */
         typedef high_bit_mask_c< SubOrder >                  table_size_c;
@@ -1275,7 +1274,7 @@ namespace detail
      */
     template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect >
     class byte_table_driven_crcs
-        : public boost::mpl::if_c< Reflect,
+        : public boost::conditional< Reflect,
           reflected_byte_table_driven_crcs<Order, TruncatedPolynomial>,
           direct_byte_table_driven_crcs<Order, TruncatedPolynomial> >::type
     { };
@@ -1472,7 +1471,7 @@ namespace detail
      */
     template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect >
     class sub_byte_crcs
-        : public boost::mpl::if_c< Reflect,
+        : public boost::conditional< Reflect,
           reflected_sub_byte_crcs<Order, TruncatedPolynomial>,
           direct_sub_byte_crcs<Order, TruncatedPolynomial> >::type
     { };
@@ -1497,17 +1496,17 @@ namespace detail
     template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect,
      int Id >
     class crc_driver
-        : public boost::mpl::if_c< (Order < CHAR_BIT), sub_byte_crcs<Order,
+        : public boost::conditional< (Order < CHAR_BIT), sub_byte_crcs<Order,
           TruncatedPolynomial, Reflect>, byte_table_driven_crcs<Order,
           TruncatedPolynomial, Reflect> >::type
     {
     public:
         /** \brief  The type to check for ID
 
-            This is a Boost.MPL integral constant indicating what ID number this
+            This is a Boost integral constant indicating what ID number this
             instantiation used.
          */
-        typedef boost::mpl::integral_c<int, Id>  id_type;
+        typedef boost::integral_constant<int, Id>  id_type;
     };
 
 

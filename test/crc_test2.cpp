@@ -13,10 +13,6 @@
 #include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
 #include <boost/predef/other/endian.h>
 #include <boost/integer.hpp>                                // for boost::uint_t
-#include <boost/mpl/bool.hpp>                            // for boost::mpl:bool_
-#include <boost/mpl/integral_c.hpp>                // for boost::mpl::integral_c
-#include <boost/mpl/list.hpp>                            // for boost::mpl::list
-#include <boost/mpl/size_t.hpp>                        // for boost::mpl::size_t
 #include <boost/typeof/typeof.hpp>                             // for BOOST_AUTO
 #include <boost/random/linear_congruential.hpp>        // for boost::minstd_rand
 
@@ -95,7 +91,7 @@ template < std::size_t Bits >
 class my_crc_rt_traits
 {
 public:
-    typedef boost::mpl::size_t<Bits>            register_length_c;
+    typedef boost::integral_constant<std::size_t, Bits>            register_length_c;
     typedef typename boost::uint_t<Bits>::fast  register_type;
     typedef boost::crc_basic<Bits>              computer_type;
 
@@ -121,15 +117,15 @@ public:
     typedef boost::crc_optimal<Bits, DivisorPolynominal, InitialRemainder,
      FinalXorMask, ReflectInputBytes, ReflectOutputRemainder>  computer_type;
 
-    typedef boost::mpl::size_t<Bits>  register_length_c;
-    typedef boost::mpl::integral_c<register_type, DivisorPolynominal>
+    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef boost::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::mpl::integral_c<register_type, InitialRemainder>
+    typedef boost::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::mpl::bool_<ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::mpl::bool_<ReflectOutputRemainder>
+    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef boost::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::mpl::integral_c<register_type, FinalXorMask>
+    typedef boost::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
 
     operator rt_adaptor_type() const
@@ -161,17 +157,17 @@ public:
 
     typedef typename rt_traits_type::register_type  register_type;
 
-    typedef boost::mpl::size_t<Bits>  register_length_c;
-    typedef boost::mpl::integral_c<register_type, DivisorPolynominal>
+    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef boost::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::mpl::integral_c<register_type, InitialRemainder>
+    typedef boost::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::mpl::bool_<ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::mpl::bool_<ReflectOutputRemainder>
+    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef boost::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::mpl::integral_c<register_type, FinalXorMask>
+    typedef boost::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
-    typedef boost::mpl::integral_c<register_type, StandardTestDataResult>
+    typedef boost::integral_constant<register_type, StandardTestDataResult>
       standard_test_data_CRC_c;
 
     typedef typename ct_traits_type::computer_type  computer_ct_type;
