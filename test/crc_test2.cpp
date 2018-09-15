@@ -13,7 +13,7 @@
 #include <boost/crc.hpp>   // for boost::crc_basic,crc_optimal,augmented_crc,crc
 
 #include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
-#include <boost/detail/endian.hpp>                       // for BOOST_BIG_ENDIAN
+#include <boost/predef/other/endian.h>
 #include <boost/integer.hpp>                                // for boost::uint_t
 #include <boost/mpl/bool.hpp>                            // for boost::mpl:bool_
 #include <boost/mpl/integral_c.hpp>                // for boost::mpl::integral_c
@@ -54,7 +54,7 @@ boost::uint16_t const  std_crc_16_result = 0xBB3Du;
 boost::uint32_t const  std_crc_32_result = 0xCBF43926ul;
 
 // Conversion functions between native- and big-endian representations
-#ifdef BOOST_BIG_ENDIAN
+#if BOOST_ENDIAN_BIG_BYTE
 boost::uint32_t  native_to_big( boost::uint32_t x )  { return x; }
 boost::uint32_t  big_to_native( boost::uint32_t x )  { return x; }
 #else
