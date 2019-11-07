@@ -566,7 +566,7 @@ namespace detail
             remainder ^= ( new_dividend_bits & 1u ) ? high_bit_mask : 0u;
 
             // perform modulo-2 division
-            bool const  quotient = remainder & high_bit_mask;
+            bool const  quotient = !!(remainder & high_bit_mask);
 
             remainder <<= 1;
             remainder ^= quotient ? truncated_divisor : 0u;
