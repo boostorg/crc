@@ -573,6 +573,9 @@ namespace detail
 
             // The quotient isn't used for anything, so don't keep it.
         }
+
+        // Clear overflowed bits
+        remainder &= std::numeric_limits<Register>::max() >> (sizeof(Register) * 8 - register_length);
     }
 
     /** \brief  Update a CRC remainder by a single bit, assuming a non-augmented
