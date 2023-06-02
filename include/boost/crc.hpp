@@ -384,7 +384,7 @@ namespace detail
     Unsigned  reflect_unsigned( Unsigned x, int word_length
      = std::numeric_limits<Unsigned>::digits )
     {
-        for ( Unsigned  l = 1u, h = l << (word_length - 1) ; h > l ; h >>= 1, l
+        for ( Unsigned  l = 1u, h = static_cast<Unsigned>(l << (word_length - 1)) ; h > l ; h >>= 1, l
          <<= 1 )
         {
             Unsigned const  m = h | l, t = x & m;
