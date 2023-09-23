@@ -36,18 +36,173 @@
 #ifndef BOOST_CRC_HPP
 #define BOOST_CRC_HPP
 
+// boost crc standalone ------------------------------------------//
+// Boost.Crc has a few boost dependencies, most of which can be substituted with
+// STD library's analogs So it worth make the library more portable by
+// implementing self-sufficient standalone mode in which Boost.crc effectively
+// becomes single-header library. In this mode library header can be easily
+// copy-pasted where needed and used as is without boost baggage (bcp copies 425
+// headers with total of 93718 LOC in boost v1.82.0).
+// CAUTION: In this mode most of platform specific workarounds and tweaks are
+// not ported, so it might work worse that in normal mode on some exotic
+// platforms.
+//
+#ifdef BOOST_CRC_STANDALONE
+
+#include <array>
+#include <climits>
+#include <cstdint>
+#include <limits>
+#include <type_traits>
+
+namespace boost
+{
+
+using std::array;
+using std::conditional;
+using std::false_type;
+using std::integral_constant;
+using std::numeric_limits;
+using std::true_type;
+using std::uintmax_t;
+
+#define BOOST_CRC_ARRAY_AT(table, index) table[ index ]
+
+#define BOOST_STATIC_CONSTANT(type, assignment) static const type assignment
+#define BOOST_STATIC_ASSERT_MSG( B, Msg ) static_assert( B, Msg )
+#define BOOST_HAS_LONG_LONG
+
+// long long workaround ------------------------------------------//
+// On gcc (and maybe other compilers?) long long is alway supported
+// but it's use may generate either warnings (with -ansi), or errors
+// (with -pedantic -ansi) unless it's use is prefixed by __extension__
+// boost_1_74_0/boost/config/detail/suffix.hpp:479
+//
+#  ifdef __GNUC__
+   __extension__ typedef long long long_long_type;
+   __extension__ typedef unsigned long long ulong_long_type;
+#  else
+   typedef long long long_long_type;
+   typedef unsigned long long ulong_long_type;
+#  endif
+
+//  port of boost::uint_t from boost::integer  -----------------------------//
+
+  //  fast integers from least integers
+  //  int_fast_t<> works correctly for unsigned too, in spite of the name.
+  template< typename LeastInt >
+  struct int_fast_t
+  {
+     typedef LeastInt fast;
+     typedef fast     type;
+  }; // imps may specialize
+
+  namespace detail{
+
+  //  convert category to type
+  template< int Category > struct int_least_helper {}; // default is empty
+  template< int Category > struct uint_least_helper {}; // default is empty
+
+  //  specializatons: 1=long, 2=int, 3=short, 4=signed char,
+  //     6=unsigned long, 7=unsigned int, 8=unsigned short, 9=unsigned char
+  //  no specializations for 0 and 5: requests for a type > long are in error
+#ifdef BOOST_HAS_LONG_LONG
+  template<> struct int_least_helper<1> { typedef boost::long_long_type least; };
+#elif defined(BOOST_HAS_MS_INT64)
+  template<> struct int_least_helper<1> { typedef __int64 least; };
+#endif
+  template<> struct int_least_helper<2> { typedef long least; };
+  template<> struct int_least_helper<3> { typedef int least; };
+  template<> struct int_least_helper<4> { typedef short least; };
+  template<> struct int_least_helper<5> { typedef signed char least; };
+#ifdef BOOST_HAS_LONG_LONG
+  template<> struct uint_least_helper<1> { typedef boost::ulong_long_type least; };
+#elif defined(BOOST_HAS_MS_INT64)
+  template<> struct uint_least_helper<1> { typedef unsigned __int64 least; };
+#endif
+  template<> struct uint_least_helper<2> { typedef unsigned long least; };
+  template<> struct uint_least_helper<3> { typedef unsigned int least; };
+  template<> struct uint_least_helper<4> { typedef unsigned short least; };
+  template<> struct uint_least_helper<5> { typedef unsigned char least; };
+
+  template <int Bits>
+  struct exact_unsigned_base_helper{};
+
+  template <> struct exact_unsigned_base_helper<sizeof(unsigned char)* CHAR_BIT> { typedef unsigned char exact; };
+#if USHRT_MAX != UCHAR_MAX
+  template <> struct exact_unsigned_base_helper<sizeof(unsigned short)* CHAR_BIT> { typedef unsigned short exact; };
+#endif
+#if UINT_MAX != USHRT_MAX
+  template <> struct exact_unsigned_base_helper<sizeof(unsigned int)* CHAR_BIT> { typedef unsigned int exact; };
+#endif
+#if ULONG_MAX != UINT_MAX && ( !defined __TI_COMPILER_VERSION__ || \
+    ( __TI_COMPILER_VERSION__ >= 7000000 && !defined __TI_40BIT_LONG__ ) )
+  template <> struct exact_unsigned_base_helper<sizeof(unsigned long)* CHAR_BIT> { typedef unsigned long exact; };
+#endif
+#if defined(BOOST_HAS_LONG_LONG) &&\
+   ((defined(ULLONG_MAX) && (ULLONG_MAX != ULONG_MAX)) ||\
+    (defined(ULONG_LONG_MAX) && (ULONG_LONG_MAX != ULONG_MAX)) ||\
+    (defined(ULONGLONG_MAX) && (ULONGLONG_MAX != ULONG_MAX)) ||\
+    (defined(_ULLONG_MAX) && (_ULLONG_MAX != ULONG_MAX)))
+  template <> struct exact_unsigned_base_helper<sizeof(boost::ulong_long_type)* CHAR_BIT> { typedef boost::ulong_long_type exact; };
+#endif
+
+
+  } // namespace detail
+
+  //  unsigned
+  template< int Bits >   // bits required
+  struct uint_t : public boost::detail::exact_unsigned_base_helper<Bits>
+  {
+     BOOST_STATIC_ASSERT_MSG(Bits <= (int)(sizeof(boost::uintmax_t) * CHAR_BIT),
+         "No suitable unsigned integer type with the requested number of bits is available.");
+  #if (defined(BOOST_BORLANDC) || defined(__CODEGEAR__)) && defined(BOOST_NO_INTEGRAL_INT64_T)
+     // It's really not clear why this workaround should be needed... shrug I guess!  JM
+     BOOST_STATIC_CONSTANT(int, s =
+           6 +
+          (Bits <= ::std::numeric_limits<unsigned long>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned int>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned short>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned char>::digits));
+     typedef typename detail::int_least_helper< ::boost::uint_t<Bits>::s>::least least;
+  #else
+      typedef typename boost::detail::uint_least_helper
+        <
+  #ifdef BOOST_HAS_LONG_LONG
+          (Bits <= (int)(sizeof(boost::long_long_type) * CHAR_BIT)) +
+  #else
+           1 +
+  #endif
+          (Bits <= ::std::numeric_limits<unsigned long>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned int>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned short>::digits) +
+          (Bits <= ::std::numeric_limits<unsigned char>::digits)
+        >::least  least;
+  #endif
+      typedef typename int_fast_t<least>::type  fast;
+      // int_fast_t<> works correctly for unsigned too, in spite of the name.
+  };
+
+//  ------------------------------------------------------------------------//
+
+}  // namespace boost
+
+#else
+
 #include <boost/array.hpp>           // for boost::array
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
 #include <boost/cstdint.hpp>         // for UINTMAX_C, boost::uintmax_t
 #include <boost/integer.hpp>         // for boost::uint_t
 #include <boost/type_traits/conditional.hpp>
 #include <boost/type_traits/integral_constant.hpp>
+#include <boost/limits.hpp>  // for std::numeric_limits
+
+#define BOOST_CRC_ARRAY_AT(table, index) table.elems[ index ]
+
+#endif  // BOOST_CRC_STANDALONE
 
 #include <climits>  // for CHAR_BIT, etc.
 #include <cstddef>  // for std::size_t
-
-#include <boost/limits.hpp>  // for std::numeric_limits
-
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
@@ -1121,7 +1276,7 @@ namespace detail
                 // Complete the multi-bit modulo-2 polynomial division
                 remainder <<= CHAR_BIT;
                 remainder |= *new_dividend_bytes++;
-                remainder ^= table.elems[ index ];
+                remainder ^= BOOST_CRC_ARRAY_AT(table, index);
             }
 
             return remainder;
@@ -1152,7 +1307,7 @@ namespace detail
 
                 // Complete the multi-bit altered modulo-2 polynomial division
                 remainder <<= CHAR_BIT;
-                remainder ^= table.elems[ index ];
+                remainder ^= BOOST_CRC_ARRAY_AT(table, index);
             }
 
             return remainder;
@@ -1213,7 +1368,7 @@ namespace detail
                 remainder >>= CHAR_BIT;
                 remainder |= static_cast<value_type>( *new_dividend_bytes++ )
                  << ( Order - CHAR_BIT );
-                remainder ^= table.elems[ index ];
+                remainder ^= BOOST_CRC_ARRAY_AT(table, index);
             }
 
             return remainder;
@@ -1246,7 +1401,7 @@ namespace detail
                 // Complete the multi-bit reflected altered modulo-2 polynomial
                 // division
                 remainder >>= CHAR_BIT;
-                remainder ^= table.elems[ index ];
+                remainder ^= BOOST_CRC_ARRAY_AT(table, index);
             }
 
             return remainder;

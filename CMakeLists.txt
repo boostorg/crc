@@ -7,18 +7,32 @@ cmake_minimum_required(VERSION 3.5...3.16)
 
 project(boost_crc VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
+include(CMakeDependentOption)
+
+cmake_dependent_option(BOOST_CRC_STANDALONE "Use Boost.Crc in standalone mode" ON "NOT BOOST_SUPERPROJECT_VERSION" OFF)
+
+message(STATUS "Boost.Crc: standalone mode ${BOOST_CRC_STANDALONE}")
+
 add_library(boost_crc INTERFACE)
 add_library(Boost::crc ALIAS boost_crc)
 
 target_include_directories(boost_crc INTERFACE include)
 
-target_link_libraries(boost_crc
-  INTERFACE
-    Boost::array
-    Boost::config
-    Boost::integer
-    Boost::type_traits
-)
+if(BOOST_CRC_STANDALONE)
+
+    target_compile_definitions(boost_crc INTERFACE BOOST_CRC_STANDALONE=1)
+
+else()
+
+    target_link_libraries(boost_crc
+      INTERFACE
+        Boost::array
+        Boost::config
+        Boost::integer
+        Boost::type_traits
+    )
+
+endif()
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
 
