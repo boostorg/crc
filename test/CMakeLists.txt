@@ -7,6 +7,6 @@ include(BoostTestJamfile OPTIONAL RESULT_VARIABLE HAVE_BOOST_TEST)
 if(HAVE_BOOST_TEST)
 
 boost_test_jamfile(FILE Jamfile.v2
-  LINK_LIBRARIES Boost::crc Boost::core Boost::timer)
+  LINK_LIBRARIES Boost::crc Boost::core Boost::timer Boost::random)
 
 endif()

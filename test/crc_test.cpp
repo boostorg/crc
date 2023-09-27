@@ -14,8 +14,8 @@
 //  14 May 2001  Initial version (Daryle Walker)
 
 
-#include <boost/config.hpp>                      // for BOOST_MSVC, etc.
 #include <boost/crc.hpp>                         // for boost::crc_basic, etc.
+#include <boost/config.hpp>                      // for BOOST_MSVC, etc.
 #include <boost/cstdint.hpp>                     // for boost::uint16_t, etc.
 #include <boost/integer.hpp>                     // for boost::uint_t
 #include <boost/random/linear_congruential.hpp>  // for boost::minstd_rand
