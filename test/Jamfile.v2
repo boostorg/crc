@@ -4,5 +4,6 @@
 
 import testing ;
 
-run crc_test.cpp ;
+run crc_test.cpp
+  /boost//timer ;
 run crc_test2.cpp ;
