@@ -968,7 +968,7 @@ namespace detail
     make_partial_xor_products_table( int register_length, Register
      truncated_divisor, bool reflect )
     {
-        boost::array<Register, ( UINTMAX_C(1) << SubOrder )>  result;
+        boost::array<Register, ( UINTMAX_C(1) << SubOrder )>  result = { 0 };
 
         // Loop over every possible dividend value
         for ( typename boost::uint_t<SubOrder + 1>::fast  dividend = 0u;
