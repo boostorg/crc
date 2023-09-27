@@ -8,4 +8,6 @@ run crc_test.cpp
   /boost//timer ;
 run crc_test2.cpp ;
 
+run pr15_test.cpp ;
+
 run quick.cpp ;
