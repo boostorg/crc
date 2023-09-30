@@ -42,12 +42,19 @@
 #include <boost/integer.hpp>         // for boost::uint_t
 #include <boost/type_traits/conditional.hpp>
 #include <boost/type_traits/integral_constant.hpp>
+#include <boost/config/pragma_message.hpp>
 
 #include <climits>  // for CHAR_BIT, etc.
 #include <cstddef>  // for std::size_t
 
 #include <boost/limits.hpp>  // for std::numeric_limits
 
+#if defined(BOOST_NO_CXX11_HDR_ARRAY) || \
+    defined(BOOST_NO_CXX11_NOEXCEPT) // BOOST_NO_CXX11_HDR_TYPE_TRAITS is set for GCC 4.8
+
+BOOST_PRAGMA_MESSAGE("C++03 support is deprecated in Boost.CRC 1.84 and will be removed in Boost.CRC 1.86.")
+
+#endif
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
