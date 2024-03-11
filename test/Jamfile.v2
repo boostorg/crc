@@ -4,8 +4,16 @@
 
 import testing ;
 
-run crc_test.cpp
-  /boost//timer ;
+project : requirements
+    <source>/boost/core//boost_core
+    <source>/boost/detail//boost_detail
+    <source>/boost/predef//boost_predef
+    <source>/boost/random//boost_random
+    <source>/boost/timer//boost_timer
+    <source>/boost/typeof//boost_typeof
+    ;
+
+run crc_test.cpp ;
 run crc_test2.cpp ;
 
 run pr15_test.cpp ;
