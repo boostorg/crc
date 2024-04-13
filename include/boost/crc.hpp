@@ -37,7 +37,6 @@
 #define BOOST_CRC_HPP
 
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
-#include <boost/integer.hpp>         // for boost::uint_t
 
 #include <array>        // for std::array
 #include <climits>      // for CHAR_BIT, etc.
@@ -46,12 +45,57 @@
 #include <limits>       // for std::numeric_limits
 #include <type_traits>  // for std::conditional, std::integral_constant
 
+// Local reimplementation of boost::uint_t, to avoid dependency on Integer
+
+namespace boost {
+namespace crc_detail {
+
+struct uint_t_8
+{
+    typedef std::uint_least8_t least;
+    typedef std::uint_fast8_t fast;
+};
+
+struct uint_t_16
+{
+    typedef std::uint_least16_t least;
+    typedef std::uint_fast16_t fast;
+};
+
+struct uint_t_32
+{
+    typedef std::uint_least32_t least;
+    typedef std::uint_fast32_t fast;
+};
+
+struct uint_t_64
+{
+    typedef std::uint_least64_t least;
+    typedef std::uint_fast64_t fast;
+};
+
+struct uint_t_none
+{
+};
+
+template<int Bits> struct uint_t:
+    std::conditional< (Bits <=  8), uint_t_8,
+    typename std::conditional< (Bits <= 16), uint_t_16,
+    typename std::conditional< (Bits <= 32), uint_t_32,
+    typename std::conditional< (Bits <= 64), uint_t_64,
+    uint_t_none>::type>::type>::type>::type
+{
+};
+
+} // namespace crc_detail
+} // namespace boost
+
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
 // form, but also allows an alternate type for compilers that don't support
 // dependent types (in template value-parameters).
 #if !(defined(BOOST_NO_DEPENDENT_TYPES_IN_TEMPLATE_VALUE_PARAMETERS))
-#define BOOST_CRC_PARM_TYPE  typename ::boost::uint_t<Bits>::fast
+#define BOOST_CRC_PARM_TYPE  typename ::boost::crc_detail::uint_t<Bits>::fast
 #else
 #define BOOST_CRC_PARM_TYPE  unsigned long
 #endif
@@ -77,14 +121,14 @@ template < std::size_t Bits, BOOST_CRC_PARM_TYPE TruncPoly = 0u,
 template < std::size_t Bits, BOOST_CRC_PARM_TYPE TruncPoly,
            BOOST_CRC_PARM_TYPE InitRem, BOOST_CRC_PARM_TYPE FinalXor,
            bool ReflectIn, bool ReflectRem >
-    typename uint_t<Bits>::fast  crc( void const *buffer,
+    typename crc_detail::uint_t<Bits>::fast  crc( void const *buffer,
      std::size_t byte_count);
 
 //! Compute the CRC of a memory block, with any augmentation provided by user
 template < std::size_t Bits, BOOST_CRC_PARM_TYPE TruncPoly >
-    typename uint_t<Bits>::fast  augmented_crc( void const *buffer,
+    typename crc_detail::uint_t<Bits>::fast  augmented_crc( void const *buffer,
      std::size_t byte_count,
-     typename uint_t<Bits>::fast initial_remainder = 0u);
+     typename crc_detail::uint_t<Bits>::fast initial_remainder = 0u);
 
 //! Computation type for ARC|CRC-16|CRC-IBM|CRC-16/ARC|CRC-16/LHA standard
 typedef crc_optimal<16, 0x8005, 0, 0, true, true>         crc_16_type;
@@ -149,7 +193,7 @@ public:
         checksums and returned or submitted remainders, (truncated) divisors, or
         XOR masks.  It is a built-in unsigned integer type.
      */
-    typedef typename boost::uint_t<Bits>::fast  value_type;
+    typedef typename boost::crc_detail::uint_t<Bits>::fast  value_type;
 
     // Constant for the template parameter
     //! A copy of \a Bits provided for meta-programming purposes
@@ -243,7 +287,7 @@ class crc_optimal
 public:
     // Type
     //! \copydoc  boost::crc_basic::value_type
-    typedef typename boost::uint_t<Bits>::fast  value_type;
+    typedef typename boost::crc_detail::uint_t<Bits>::fast  value_type;
 
     // Constants for the template parameters
     //! \copydoc  boost::crc_basic::bit_count
@@ -332,7 +376,7 @@ namespace detail
      */
     template < int BitIndex >
     struct high_bit_mask_c
-        : std::integral_constant<typename boost::uint_t< BitIndex + 1 >::fast,
+        : std::integral_constant<typename boost::crc_detail::uint_t< BitIndex + 1 >::fast,
            ( UINTMAX_C(1) << BitIndex )>
     {};
 
@@ -351,7 +395,7 @@ namespace detail
      */
     template < int BitCount >
     struct low_bits_mask_c
-        : std::integral_constant<typename boost::uint_t< BitCount >::fast, (
+        : std::integral_constant<typename boost::crc_detail::uint_t< BitCount >::fast, (
            BitCount ? (( (( UINTMAX_C(1) << (BitCount - 1) ) - 1u) << 1 ) |
            UINTMAX_C( 1 )) : 0u )>
     {};
@@ -764,7 +808,7 @@ namespace detail
             This type is the input and output type for the (possible-)
             reflection function, which does nothing here.
          */
-        typedef typename boost::uint_t< BitLength >::fast  value_type;
+        typedef typename boost::crc_detail::uint_t< BitLength >::fast  value_type;
 
         /** \brief  Does nothing
 
@@ -810,7 +854,7 @@ namespace detail
 
             This is both the input and output type for the reflection function.
          */
-        typedef typename boost::uint_t< BitLength >::fast  value_type;
+        typedef typename boost::crc_detail::uint_t< BitLength >::fast  value_type;
 
         /** \brief  Reflect (part of) the given value
 
@@ -971,7 +1015,7 @@ namespace detail
         std::array<Register, ( UINTMAX_C(1) << SubOrder )>  result = { 0 };
 
         // Loop over every possible dividend value
-        for ( typename boost::uint_t<SubOrder + 1>::fast  dividend = 0u;
+        for ( typename boost::crc_detail::uint_t<SubOrder + 1>::fast  dividend = 0u;
          dividend < result.size() ; ++dividend )
         {
             Register  remainder = 0u;
@@ -1025,7 +1069,7 @@ namespace detail
 
             This is the output type for the partial-product map.
          */
-        typedef typename boost::uint_t< Order >::fast          value_type;
+        typedef typename boost::crc_detail::uint_t< Order >::fast          value_type;
         /** \brief  The type to check the divisor
 
             This is a Boost integral constant representing the (truncated)
@@ -2217,7 +2261,7 @@ template < std::size_t Bits, BOOST_CRC_PARM_TYPE TruncPoly,
            BOOST_CRC_PARM_TYPE InitRem, BOOST_CRC_PARM_TYPE FinalXor,
            bool ReflectIn, bool ReflectRem >
 inline
-typename uint_t<Bits>::fast
+typename crc_detail::uint_t<Bits>::fast
 crc
 (
     void const *  buffer,
@@ -2279,12 +2323,12 @@ crc
       be used only if \c CHAR_BIT divides \a Bits evenly!
  */
 template < std::size_t Bits, BOOST_CRC_PARM_TYPE TruncPoly >
-typename uint_t<Bits>::fast
+typename crc_detail::uint_t<Bits>::fast
 augmented_crc
 (
     void const *                 buffer,
     std::size_t                  byte_count,
-    typename uint_t<Bits>::fast  initial_remainder  // = 0u
+    typename crc_detail::uint_t<Bits>::fast  initial_remainder  // = 0u
 )
 {
     return detail::low_bits_mask_c<Bits>::value &
