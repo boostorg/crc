@@ -14,10 +14,8 @@ target_include_directories(boost_crc INTERFACE include)
 
 target_link_libraries(boost_crc
   INTERFACE
-    Boost::array
     Boost::config
     Boost::integer
-    Boost::type_traits
 )
 
 target_compile_features(boost_crc INTERFACE cxx_std_11)
