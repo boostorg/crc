@@ -45,8 +45,7 @@
 
 #include <climits>  // for CHAR_BIT, etc.
 #include <cstddef>  // for std::size_t
-
-#include <boost/limits.hpp>  // for std::numeric_limits
+#include <limits>   // for std::numeric_limits
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
