@@ -38,13 +38,13 @@
 
 #include <boost/array.hpp>           // for boost::array
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
-#include <boost/cstdint.hpp>         // for UINTMAX_C, boost::uintmax_t
 #include <boost/integer.hpp>         // for boost::uint_t
 #include <boost/type_traits/conditional.hpp>
 #include <boost/type_traits/integral_constant.hpp>
 
 #include <climits>  // for CHAR_BIT, etc.
 #include <cstddef>  // for std::size_t
+#include <cstdint>  // for UINTMAX_C, std::uintmax_t
 #include <limits>   // for std::numeric_limits
 
 // The type of CRC parameters that can go in a template should be related
@@ -118,7 +118,7 @@ namespace detail
         class possible_reflector;
 
     //! Mix-in class for byte-fed, table-driven CRC algorithms
-    template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect,
+    template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect,
      int Id = 0 >
     class crc_driver;
 
@@ -1005,7 +1005,7 @@ namespace detail
           bit from a new dividend's bits and go down, as normal.  Otherwise,
           proceed from the lowest-order bit and go up.
      */
-    template < int Order, int SubOrder, boost::uintmax_t TruncatedPolynomial,
+    template < int Order, int SubOrder, std::uintmax_t TruncatedPolynomial,
      bool Reflect >
     class crc_table_t
     {
@@ -1086,7 +1086,7 @@ namespace detail
           polynomial.  The highest-order coefficient is omitted and always
           assumed to be 1.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial >
+    template < int Order, std::uintmax_t TruncatedPolynomial >
     class direct_byte_table_driven_crcs
         : public crc_table_t<Order, CHAR_BIT, TruncatedPolynomial, false>
     {
@@ -1176,7 +1176,7 @@ namespace detail
           polynomial.  The highest-order coefficient is omitted and always
           assumed to be 1.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial >
+    template < int Order, std::uintmax_t TruncatedPolynomial >
     class reflected_byte_table_driven_crcs
         : public crc_table_t<Order, CHAR_BIT, TruncatedPolynomial, true>
     {
@@ -1273,7 +1273,7 @@ namespace detail
           input byte and go down, as normal.  Otherwise, proceed from the
           lowest-order bit and go up.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect >
+    template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect >
     class byte_table_driven_crcs
         : public boost::conditional< Reflect,
           reflected_byte_table_driven_crcs<Order, TruncatedPolynomial>,
@@ -1295,7 +1295,7 @@ namespace detail
           polynomial.  The highest-order coefficient is omitted and always
           assumed to be 1.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial >
+    template < int Order, std::uintmax_t TruncatedPolynomial >
     class direct_sub_byte_crcs
         : public crc_table_t<Order, Order, TruncatedPolynomial, false>
     {
@@ -1378,7 +1378,7 @@ namespace detail
           polynomial.  The highest-order coefficient is omitted and always
           assumed to be 1.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial >
+    template < int Order, std::uintmax_t TruncatedPolynomial >
     class reflected_sub_byte_crcs
         : public crc_table_t<Order, Order, TruncatedPolynomial, true>
     {
@@ -1470,7 +1470,7 @@ namespace detail
           input byte and go down, as normal.  Otherwise, proceed from the
           lowest-order bit and go up.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect >
+    template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect >
     class sub_byte_crcs
         : public boost::conditional< Reflect,
           reflected_sub_byte_crcs<Order, TruncatedPolynomial>,
@@ -1494,7 +1494,7 @@ namespace detail
         \tparam Id  An extra differentiator if multiple copies of this class
           template are mixed-in as base classes.  Defaults to 0 if omitted.
      */
-    template < int Order, boost::uintmax_t TruncatedPolynomial, bool Reflect,
+    template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect,
      int Id >
     class crc_driver
         : public boost::conditional< (Order < CHAR_BIT), sub_byte_crcs<Order,
