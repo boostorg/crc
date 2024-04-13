@@ -36,15 +36,15 @@
 #ifndef BOOST_CRC_HPP
 #define BOOST_CRC_HPP
 
-#include <boost/array.hpp>           // for boost::array
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
 #include <boost/integer.hpp>         // for boost::uint_t
 
+#include <array>        // for std::array
 #include <climits>      // for CHAR_BIT, etc.
 #include <cstddef>      // for std::size_t
 #include <cstdint>      // for UINTMAX_C, std::uintmax_t
 #include <limits>       // for std::numeric_limits
-#include <type_traits>  // for conditional, integral_constant
+#include <type_traits>  // for std::conditional, std::integral_constant
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
@@ -402,10 +402,10 @@ namespace detail
           <var>i</var>, <code><var>a</var>[ <var>i</var> ]</code> resolves to
           the reflected value of <var>i</var>.
      */
-    boost::array< unsigned char, (UINTMAX_C( 1 ) << CHAR_BIT) >
+    std::array< unsigned char, (UINTMAX_C( 1 ) << CHAR_BIT) >
     inline make_byte_reflection_table()
     {
-        boost::array<unsigned char, ( UINTMAX_C(1) << CHAR_BIT )>  result;
+        std::array<unsigned char, ( UINTMAX_C(1) << CHAR_BIT )>  result;
         unsigned char                                              i = 0u;
 
         do
@@ -431,7 +431,7 @@ namespace detail
      */
     inline unsigned char  reflect_byte( unsigned char x )
     {
-        static  boost::array<unsigned char, ( UINTMAX_C(1) << CHAR_BIT )> const
+        static  std::array<unsigned char, ( UINTMAX_C(1) << CHAR_BIT )> const
           table = make_byte_reflection_table();
 
         return table[ x ];
@@ -964,11 +964,11 @@ namespace detail
           same composite mask table as using augmented-CRC routines.
      */
     template < int SubOrder, typename Register >
-    boost::array< Register, (UINTMAX_C( 1 ) << SubOrder) >
+    std::array< Register, (UINTMAX_C( 1 ) << SubOrder) >
     make_partial_xor_products_table( int register_length, Register
      truncated_divisor, bool reflect )
     {
-        boost::array<Register, ( UINTMAX_C(1) << SubOrder )>  result = { 0 };
+        std::array<Register, ( UINTMAX_C(1) << SubOrder )>  result = { 0 };
 
         // Loop over every possible dividend value
         for ( typename boost::uint_t<SubOrder + 1>::fast  dividend = 0u;
@@ -1050,7 +1050,7 @@ namespace detail
             This is the array type that takes units as the index and said unit's
             composite partial-product mask as the element.
          */
-        typedef boost::array<value_type, table_size_c::value>  array_type;
+        typedef std::array<value_type, table_size_c::value>  array_type;
         /** \brief  Create a global array for the mapping table
 
             Creates an instance of a partial-product array with this class's
@@ -1121,7 +1121,7 @@ namespace detail
                 // Complete the multi-bit modulo-2 polynomial division
                 remainder <<= CHAR_BIT;
                 remainder |= *new_dividend_bytes++;
-                remainder ^= table.elems[ index ];
+                remainder ^= table[ index ];
             }
 
             return remainder;
@@ -1152,7 +1152,7 @@ namespace detail
 
                 // Complete the multi-bit altered modulo-2 polynomial division
                 remainder <<= CHAR_BIT;
-                remainder ^= table.elems[ index ];
+                remainder ^= table[ index ];
             }
 
             return remainder;
@@ -1213,7 +1213,7 @@ namespace detail
                 remainder >>= CHAR_BIT;
                 remainder |= static_cast<value_type>( *new_dividend_bytes++ )
                  << ( Order - CHAR_BIT );
-                remainder ^= table.elems[ index ];
+                remainder ^= table[ index ];
             }
 
             return remainder;
@@ -1246,7 +1246,7 @@ namespace detail
                 // Complete the multi-bit reflected altered modulo-2 polynomial
                 // division
                 remainder >>= CHAR_BIT;
-                remainder ^= table.elems[ index ];
+                remainder ^= table[ index ];
             }
 
             return remainder;
