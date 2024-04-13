@@ -39,13 +39,12 @@
 #include <boost/array.hpp>           // for boost::array
 #include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
 #include <boost/integer.hpp>         // for boost::uint_t
-#include <boost/type_traits/conditional.hpp>
-#include <boost/type_traits/integral_constant.hpp>
 
-#include <climits>  // for CHAR_BIT, etc.
-#include <cstddef>  // for std::size_t
-#include <cstdint>  // for UINTMAX_C, std::uintmax_t
-#include <limits>   // for std::numeric_limits
+#include <climits>      // for CHAR_BIT, etc.
+#include <cstddef>      // for std::size_t
+#include <cstdint>      // for UINTMAX_C, std::uintmax_t
+#include <limits>       // for std::numeric_limits
+#include <type_traits>  // for conditional, integral_constant
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
@@ -333,7 +332,7 @@ namespace detail
      */
     template < int BitIndex >
     struct high_bit_mask_c
-        : boost::integral_constant<typename boost::uint_t< BitIndex + 1 >::fast,
+        : std::integral_constant<typename boost::uint_t< BitIndex + 1 >::fast,
            ( UINTMAX_C(1) << BitIndex )>
     {};
 
@@ -352,7 +351,7 @@ namespace detail
      */
     template < int BitCount >
     struct low_bits_mask_c
-        : boost::integral_constant<typename boost::uint_t< BitCount >::fast, (
+        : std::integral_constant<typename boost::uint_t< BitCount >::fast, (
            BitCount ? (( (( UINTMAX_C(1) << (BitCount - 1) ) - 1u) << 1 ) |
            UINTMAX_C( 1 )) : 0u )>
     {};
@@ -753,13 +752,13 @@ namespace detail
             This is a Boost integral constant indicating that this class
             does not reflect its input values.
          */
-        typedef boost::false_type                 is_reflecting_type;
+        typedef std::false_type                 is_reflecting_type;
         /** \brief  The type to check for register bit length
 
             This is a Boost integral constant indicating how many
             significant bits won't actually be reflected.
          */
-        typedef boost::integral_constant< int, BitLength >      width_c;
+        typedef std::integral_constant< int, BitLength >      width_c;
         /** \brief  The type of (not-)reflected values
 
             This type is the input and output type for the (possible-)
@@ -800,13 +799,13 @@ namespace detail
             This is a Boost integral constant indicating that this class
             does reflect its input values.
          */
-        typedef boost::true_type                  is_reflecting_type;
+        typedef std::true_type                  is_reflecting_type;
         /** \brief  The type to check for register bit length
 
             This is a Boost integral constant indicating how many
             significant bits will be reflected.
          */
-        typedef boost::integral_constant< int, BitLength >      width_c;
+        typedef std::integral_constant< int, BitLength >      width_c;
         /** \brief  The type of reflected values
 
             This is both the input and output type for the reflection function.
@@ -849,13 +848,13 @@ namespace detail
             This is a Boost integral constant indicating that this class
             does reflect its input values.
          */
-        typedef boost::true_type              is_reflecting_type;
+        typedef std::true_type              is_reflecting_type;
         /** \brief  The type to check for register bit length
 
             This is a Boost integral constant indicating how many
             significant bits will be reflected.
          */
-        typedef boost::integral_constant< int, BitLength >  width_c;
+        typedef std::integral_constant< int, BitLength >  width_c;
         /** \brief  The type of reflected values
 
             This is both the input and output type for the reflection function.
@@ -891,7 +890,7 @@ namespace detail
      */
     template < int BitLength >
     class reflector
-        : public boost::conditional< (BitLength > CHAR_BIT),
+        : public std::conditional< (BitLength > CHAR_BIT),
           super_byte_reflector<BitLength>, sub_type_reflector<BitLength> >::type
     { };
 
@@ -910,7 +909,7 @@ namespace detail
      */
     template < int BitLength, bool DoIt, int Id >
     class possible_reflector
-        : public boost::conditional< DoIt, reflector<BitLength>,
+        : public std::conditional< DoIt, reflector<BitLength>,
           non_reflector<BitLength> >::type
     {
     public:
@@ -919,7 +918,7 @@ namespace detail
             This is a Boost integral constant indicating what ID number this
             instantiation used.
          */
-        typedef boost::integral_constant<int, Id>  id_type;
+        typedef std::integral_constant<int, Id>  id_type;
     };
 
     /** \brief  Find the composite remainder update effect from a fixed bit
@@ -1015,13 +1014,13 @@ namespace detail
             This is a Boost integral constant indicating how many
             significant bits are in the remainder and (truncated) divisor.
          */
-        typedef boost::integral_constant< int, Order >              width_c;
+        typedef std::integral_constant< int, Order >              width_c;
         /** \brief  The type to check for index-unit bit length
 
             This is a Boost integral constant indicating how many
             significant bits are in the trial new dividends.
          */
-        typedef boost::integral_constant< int, SubOrder >      unit_width_c;
+        typedef std::integral_constant< int, SubOrder >      unit_width_c;
         /** \brief  The type of registers
 
             This is the output type for the partial-product map.
@@ -1032,14 +1031,14 @@ namespace detail
             This is a Boost integral constant representing the (truncated)
             divisor.
          */
-        typedef boost::integral_constant< value_type, TruncatedPolynomial >
+        typedef std::integral_constant< value_type, TruncatedPolynomial >
           poly_c;
         /** \brief  The type to check for reflection
 
             This is a Boost integral constant representing whether input
             units should be read in reverse order.
          */
-        typedef boost::integral_constant< bool, Reflect >           refin_c;
+        typedef std::integral_constant< bool, Reflect >           refin_c;
         /** \brief  The type to check for map size
 
             This is a Boost integral constant representing the number of
@@ -1275,7 +1274,7 @@ namespace detail
      */
     template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect >
     class byte_table_driven_crcs
-        : public boost::conditional< Reflect,
+        : public std::conditional< Reflect,
           reflected_byte_table_driven_crcs<Order, TruncatedPolynomial>,
           direct_byte_table_driven_crcs<Order, TruncatedPolynomial> >::type
     { };
@@ -1472,7 +1471,7 @@ namespace detail
      */
     template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect >
     class sub_byte_crcs
-        : public boost::conditional< Reflect,
+        : public std::conditional< Reflect,
           reflected_sub_byte_crcs<Order, TruncatedPolynomial>,
           direct_sub_byte_crcs<Order, TruncatedPolynomial> >::type
     { };
@@ -1497,7 +1496,7 @@ namespace detail
     template < int Order, std::uintmax_t TruncatedPolynomial, bool Reflect,
      int Id >
     class crc_driver
-        : public boost::conditional< (Order < CHAR_BIT), sub_byte_crcs<Order,
+        : public std::conditional< (Order < CHAR_BIT), sub_byte_crcs<Order,
           TruncatedPolynomial, Reflect>, byte_table_driven_crcs<Order,
           TruncatedPolynomial, Reflect> >::type
     {
@@ -1507,7 +1506,7 @@ namespace detail
             This is a Boost integral constant indicating what ID number this
             instantiation used.
          */
-        typedef boost::integral_constant<int, Id>  id_type;
+        typedef std::integral_constant<int, Id>  id_type;
     };
 
 
