@@ -7,12 +7,12 @@
 
 //  See <http://www.boost.org/libs/crc/> for the library's home page.
 
-#include <boost/crc.hpp>   // for boost::crc_basic,crc_optimal,augmented_crc,crc
-#include <boost/core/lightweight_test.hpp>
-#include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
-#include <boost/predef/other/endian.h>
-#include <boost/integer.hpp>                                // for boost::uint_t
-#include <boost/core/detail/minstd_rand.hpp>     // for boost::detail::minstd_rand
+#include <boost/crc.hpp>                      // for boost::crc_basic,crc_optimal,augmented_crc,crc
+#include <boost/core/bit.hpp>                 // for boost::core::byteswap, boost::core::endian
+#include <boost/core/detail/minstd_rand.hpp>  // for boost::detail::minstd_rand
+#include <boost/core/lightweight_test.hpp>    // for BOOST_TEST_EQ, et al
+#include <boost/cstdint.hpp>                  // for boost::uint16_t, uint32_t, uintmax_t
+#include <boost/integer.hpp>                  // for boost::uint_t
 
 #include <algorithm>    // for std::generate_n, for_each
 #include <climits>      // for CHAR_BIT
@@ -48,42 +48,21 @@ boost::uint16_t const  std_crc_16_result = 0xBB3Du;
 boost::uint32_t const  std_crc_32_result = 0xCBF43926ul;
 
 // Conversion functions between native- and big-endian representations
-#if BOOST_ENDIAN_BIG_BYTE
-boost::uint32_t  native_to_big( boost::uint32_t x )  { return x; }
-boost::uint32_t  big_to_native( boost::uint32_t x )  { return x; }
-#else
-union endian_convert
+
+inline boost::uint32_t native_to_big_impl( boost::uint32_t x, std::true_type )
 {
-    boost::uint32_t  w;
-    unsigned char    p[ 4 ];
-};
-
-boost::uint32_t  native_to_big( boost::uint32_t x )
-{
-    endian_convert  e;
-
-    e.p[ 0 ] = x >> 24;
-    e.p[ 1 ] = x >> 16;
-    e.p[ 2 ] = x >> 8;
-    e.p[ 3 ] = x;
-    return e.w;
-}
-
-boost::uint32_t  big_to_native( boost::uint32_t x )
-{
-    endian_convert  e;
-
-    e.w = x;
-    x = e.p[ 0 ];
-    x <<= 8;
-    x |= e.p[ 1 ];
-    x <<= 8;
-    x |= e.p[ 2 ];
-    x <<= 8;
-    x |= e.p[ 3 ];
     return x;
 }
-#endif
+
+inline boost::uint32_t native_to_big_impl( boost::uint32_t x, std::false_type )
+{
+    return boost::core::byteswap( x );
+}
+
+inline boost::uint32_t native_to_big( boost::uint32_t x )
+{
+    return native_to_big_impl( x, std::integral_constant<bool, boost::core::endian::native == boost::core::endian::big>() );
+}
 
 // Define CRC parameters inside traits classes.  Probably will use this in a
 // future version of the CRC libray!
