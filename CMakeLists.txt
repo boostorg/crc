@@ -12,11 +12,6 @@ add_library(Boost::crc ALIAS boost_crc)
 
 target_include_directories(boost_crc INTERFACE include)
 
-target_link_libraries(boost_crc
-  INTERFACE
-    Boost::config
-)
-
 target_compile_features(boost_crc INTERFACE cxx_std_11)
 
 if(BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt")
