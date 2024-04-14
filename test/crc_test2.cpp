@@ -12,7 +12,6 @@
 #include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
 #include <boost/predef/other/endian.h>
 #include <boost/integer.hpp>                                // for boost::uint_t
-#include <boost/typeof/typeof.hpp>                             // for BOOST_AUTO
 #include <boost/core/detail/minstd_rand.hpp>     // for boost::detail::minstd_rand
 
 #include <algorithm>    // for std::generate_n, for_each
@@ -30,6 +29,7 @@
 #define CONTROL_SUB_BYTE_MISMATCHED_REFLECTION_TEST  1
 #endif
 
+#define BOOST_AUTO(var, exp) auto var = exp
 
 // Common definitions  -------------------------------------------------------//
 
