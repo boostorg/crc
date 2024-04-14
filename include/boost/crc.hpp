@@ -36,8 +36,6 @@
 #ifndef BOOST_CRC_HPP
 #define BOOST_CRC_HPP
 
-#include <boost/config.hpp>          // for BOOST_STATIC_CONSTANT, etc.
-
 #include <array>        // for std::array
 #include <climits>      // for CHAR_BIT, etc.
 #include <cstddef>      // for std::size_t
@@ -92,13 +90,8 @@ template<int Bits> struct uint_t:
 
 // The type of CRC parameters that can go in a template should be related
 // on the CRC's bit count.  This macro expresses that type in a compact
-// form, but also allows an alternate type for compilers that don't support
-// dependent types (in template value-parameters).
-#if !(defined(BOOST_NO_DEPENDENT_TYPES_IN_TEMPLATE_VALUE_PARAMETERS))
+// form.
 #define BOOST_CRC_PARM_TYPE  typename ::boost::crc_detail::uint_t<Bits>::fast
-#else
-#define BOOST_CRC_PARM_TYPE  unsigned long
-#endif
 
 namespace boost
 {
@@ -197,7 +190,7 @@ public:
 
     // Constant for the template parameter
     //! A copy of \a Bits provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( std::size_t, bit_count = Bits );
+    static const std::size_t bit_count = Bits;
 
     // Constructor (use the automatic copy-ctr, move-ctr, and dtr)
     //! Create a computer, separately listing each needed parameter
@@ -291,17 +284,17 @@ public:
 
     // Constants for the template parameters
     //! \copydoc  boost::crc_basic::bit_count
-    BOOST_STATIC_CONSTANT( std::size_t, bit_count = Bits );
+    static const std::size_t bit_count = Bits;
     //! A copy of \a TruncPoly provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( value_type, truncated_polynominal = TruncPoly );
+    static const value_type truncated_polynominal = TruncPoly;
     //! A copy of \a InitRem provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( value_type, initial_remainder = InitRem );
+    static const value_type initial_remainder = InitRem;
     //! A copy of \a FinalXor provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( value_type, final_xor_value = FinalXor );
+    static const value_type final_xor_value = FinalXor;
     //! A copy of \a ReflectIn provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( bool, reflect_input = ReflectIn );
+    static const bool reflect_input = ReflectIn;
     //! A copy of \a ReflectRem provided for meta-programming purposes
-    BOOST_STATIC_CONSTANT( bool, reflect_remainder = ReflectRem );
+    static const bool reflect_remainder = ReflectRem;
 
     // Constructor (use the automatic copy-ctr, move-ctr, and dtr)
     //! Create a computer, giving an initial remainder if desired
