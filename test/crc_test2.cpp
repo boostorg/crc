@@ -14,11 +14,11 @@
 #include <boost/integer.hpp>                                // for boost::uint_t
 #include <boost/typeof/typeof.hpp>                             // for BOOST_AUTO
 #include <boost/core/detail/minstd_rand.hpp>     // for boost::detail::minstd_rand
-#include <boost/type_traits/integral_constant.hpp>
 
-#include <algorithm>  // for std::generate_n, for_each
-#include <climits>    // for CHAR_BIT
-#include <cstddef>    // for std::size_t
+#include <algorithm>    // for std::generate_n, for_each
+#include <climits>      // for CHAR_BIT
+#include <cstddef>      // for std::size_t
+#include <type_traits>  // for std::integral_constant
 
 // Sanity check
 #if CHAR_BIT != 8
@@ -91,7 +91,7 @@ template < std::size_t Bits >
 class my_crc_rt_traits
 {
 public:
-    typedef boost::integral_constant<std::size_t, Bits>            register_length_c;
+    typedef std::integral_constant<std::size_t, Bits>            register_length_c;
     typedef typename boost::uint_t<Bits>::fast  register_type;
     typedef boost::crc_basic<Bits>              computer_type;
 
@@ -117,15 +117,15 @@ public:
     typedef boost::crc_optimal<Bits, DivisorPolynominal, InitialRemainder,
      FinalXorMask, ReflectInputBytes, ReflectOutputRemainder>  computer_type;
 
-    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
-    typedef boost::integral_constant<register_type, DivisorPolynominal>
+    typedef std::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef std::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::integral_constant<register_type, InitialRemainder>
+    typedef std::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::integral_constant<bool, ReflectOutputRemainder>
+    typedef std::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef std::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::integral_constant<register_type, FinalXorMask>
+    typedef std::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
 
     operator rt_adaptor_type() const
@@ -157,17 +157,17 @@ public:
 
     typedef typename rt_traits_type::register_type  register_type;
 
-    typedef boost::integral_constant<std::size_t, Bits>  register_length_c;
-    typedef boost::integral_constant<register_type, DivisorPolynominal>
+    typedef std::integral_constant<std::size_t, Bits>  register_length_c;
+    typedef std::integral_constant<register_type, DivisorPolynominal>
       divisor_polynominal_c;
-    typedef boost::integral_constant<register_type, InitialRemainder>
+    typedef std::integral_constant<register_type, InitialRemainder>
       initial_remainder_c;
-    typedef boost::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
-    typedef boost::integral_constant<bool, ReflectOutputRemainder>
+    typedef std::integral_constant<bool, ReflectInputBytes>  reflect_input_byte_c;
+    typedef std::integral_constant<bool, ReflectOutputRemainder>
       reflect_output_remainder_c;
-    typedef boost::integral_constant<register_type, FinalXorMask>
+    typedef std::integral_constant<register_type, FinalXorMask>
       final_xor_mask_c;
-    typedef boost::integral_constant<register_type, StandardTestDataResult>
+    typedef std::integral_constant<register_type, StandardTestDataResult>
       standard_test_data_CRC_c;
 
     typedef typename ct_traits_type::computer_type  computer_ct_type;
