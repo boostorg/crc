@@ -7,7 +7,6 @@ cmake_minimum_required(VERSION 3.5...3.20)
 project(cmake_subdir_test LANGUAGES CXX)
 
 add_subdirectory(../.. boostorg/crc)
-add_subdirectory(../../../config boostorg/config)
 
 add_executable(quick ../quick.cpp)
 target_link_libraries(quick Boost::crc)
