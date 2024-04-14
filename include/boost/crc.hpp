@@ -616,7 +616,7 @@ namespace detail
         }
 
         // Clear overflowed bits
-        remainder &= std::numeric_limits<Register>::max() >> (std::numeric_limits<Register>::digits - register_length);
+        remainder &= (std::numeric_limits<Register>::max)() >> (std::numeric_limits<Register>::digits - register_length);
     }
 
     /** \brief  Update a CRC remainder by a single bit, assuming a non-augmented
