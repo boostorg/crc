@@ -7,14 +7,14 @@
 
 //  See <http://www.boost.org/libs/crc/> for the library's home page.
 
-#include <boost/core/lightweight_test.hpp>
 #include <boost/crc.hpp>   // for boost::crc_basic,crc_optimal,augmented_crc,crc
-
+#include <boost/core/lightweight_test.hpp>
 #include <boost/cstdint.hpp>         // for boost::uint16_t, uint32_t, uintmax_t
 #include <boost/predef/other/endian.h>
 #include <boost/integer.hpp>                                // for boost::uint_t
 #include <boost/typeof/typeof.hpp>                             // for BOOST_AUTO
-#include <boost/random/linear_congruential.hpp>        // for boost::minstd_rand
+#include <boost/core/detail/minstd_rand.hpp>     // for boost::detail::minstd_rand
+#include <boost/type_traits/integral_constant.hpp>
 
 #include <algorithm>  // for std::generate_n, for_each
 #include <climits>    // for CHAR_BIT
@@ -325,7 +325,7 @@ void operator()(CRCPolicy)
     boost::uint32_t    ran_data[ 256 ];
     std::size_t const  ran_length = sizeof(ran_data) / sizeof(ran_data[0]);
 
-    std::generate_n( ran_data, ran_length, boost::minstd_rand() );
+    std::generate_n( ran_data, ran_length, boost::detail::minstd_rand() );
 
     // Create computers and compute the checksum of the data
     BOOST_AUTO( optimal_tester, CRCPolicy::make_crc_optimal() );
@@ -386,7 +386,7 @@ void augmented_crc_test()
     uint32_t &    run_crc = run_data[ data_length ];
     size_t const  data_size = sizeof( run_data ) - sizeof( run_crc );
 
-    std::generate_n( run_data, data_length, boost::minstd_rand() );
+    std::generate_n( run_data, data_length, boost::detail::minstd_rand() );
     run_crc = 0u;
 
     // The augmented-CRC routine needs to push an appropriate number of zero
