@@ -5,12 +5,12 @@
 import testing ;
 
 project : requirements
-    <source>/boost/core//boost_core
-    <source>/boost/detail//boost_detail
-    <source>/boost/predef//boost_predef
-    <source>/boost/random//boost_random
-    <source>/boost/timer//boost_timer
-    <source>/boost/typeof//boost_typeof
+    <library>/boost/core//boost_core
+    <library>/boost/detail//boost_detail
+    <library>/boost/predef//boost_predef
+    <library>/boost/random//boost_random
+    <library>/boost/timer//boost_timer
+    <library>/boost/typeof//boost_typeof
     ;
 
 run crc_test.cpp ;
