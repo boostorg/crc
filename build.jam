@@ -11,9 +11,10 @@ project /boost/crc
     ;
 
 explicit
-    [ alias boost_crc ]
+    [ alias boost_crc : : : : <library>$(boost_dependencies) ]
     [ alias all : boost_crc test ]
     ;
 
 call-if : boost-library crc
     ;
+
