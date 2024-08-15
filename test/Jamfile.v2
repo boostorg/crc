@@ -6,7 +6,6 @@ import testing ;
 
 project : requirements
     <library>/boost/core//boost_core
-    <library>/boost/detail//boost_detail
     <library>/boost/predef//boost_predef
     <library>/boost/random//boost_random
     <library>/boost/timer//boost_timer
