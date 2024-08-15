@@ -6,10 +6,8 @@ import testing ;
 
 project : requirements
     <library>/boost/core//boost_core
-    <library>/boost/predef//boost_predef
-    <library>/boost/random//boost_random
+    <library>/boost/integer//boost_integer
     <library>/boost/timer//boost_timer
-    <library>/boost/typeof//boost_typeof
     ;
 
 run crc_test.cpp ;
