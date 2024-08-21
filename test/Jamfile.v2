@@ -4,8 +4,13 @@
 
 import testing ;
 
-run crc_test.cpp
-  /boost//timer ;
+project : requirements
+    <library>/boost/core//boost_core
+    <library>/boost/integer//boost_integer
+    <library>/boost/timer//boost_timer
+    ;
+
+run crc_test.cpp ;
 run crc_test2.cpp ;
 
 run pr15_test.cpp ;
