@@ -50,26 +50,22 @@ namespace crc_detail {
 
 struct uint_t_8
 {
-    typedef std::uint_least8_t least;
-    typedef std::uint_fast8_t fast;
+    typedef std::uint_least8_t fast; // matches boost::uint_t<8>::fast
 };
 
 struct uint_t_16
 {
-    typedef std::uint_least16_t least;
-    typedef std::uint_fast16_t fast;
+    typedef std::uint_least16_t fast; // matches boost::uint_t<16>::fast
 };
 
 struct uint_t_32
 {
-    typedef std::uint_least32_t least;
-    typedef std::uint_fast32_t fast;
+    typedef std::uint_least32_t fast; // matches boost::uint_t<32>::fast
 };
 
 struct uint_t_64
 {
-    typedef std::uint_least64_t least;
-    typedef std::uint_fast64_t fast;
+    typedef std::uint_least64_t fast; // matches boost::uint_t<64>::fast
 };
 
 struct uint_t_none
