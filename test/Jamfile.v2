@@ -18,4 +18,7 @@ run crc_test2.cpp
 run pr15_test.cpp ;
 compile issue25_test.cpp ;
 
+run uint_t_test.cpp
+  /boost/integer//boost_integer ;
+
 run quick.cpp ;
