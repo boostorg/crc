@@ -18,58 +18,36 @@
 #include <iostream>   // for std::cerr, std::cout
 #include <ostream>    // for std::endl
 
-
 // Redefine this to change to processing buffer size
-#ifndef PRIVATE_BUFFER_SIZE
-#define PRIVATE_BUFFER_SIZE  1024
-#endif
-
-// Global objects
-std::streamsize const  buffer_size = PRIVATE_BUFFER_SIZE;
-
+std::streamsize const buffer_size = 1024;
 
 // Main program
-int
-main
-(
-    int           argc,
-    char const *  argv[]
-)
-try
-{
-    boost::crc_32_type  result;
+int main(int argc, char const *argv[]) {
+  try {
+    boost::crc_32_type result;
 
-    for ( int i = 1 ; i < argc ; ++i )
-    {
-        std::ifstream  ifs( argv[i], std::ios_base::binary );
+    for (int i = 1; i < argc; ++i) {
+      std::ifstream ifs(argv[i], std::ios_base::binary);
 
-        if ( ifs )
-        {
-            do
-            {
-                char  buffer[ buffer_size ];
+      if (ifs) {
+        do {
+          char buffer[buffer_size];
 
-                ifs.read( buffer, buffer_size );
-                result.process_bytes( buffer, ifs.gcount() );
-            } while ( ifs );
-        }
-        else
-        {
-            std::cerr << "Failed to open file '" << argv[i] << "'."
-             << std::endl;
-        }
+          ifs.read(buffer, buffer_size);
+          result.process_bytes(buffer, ifs.gcount());
+        } while (ifs);
+      } else {
+        std::cerr << "Failed to open file '" << argv[i] << "'." << std::endl;
+      }
     }
 
     std::cout << std::hex << std::uppercase << result.checksum() << std::endl;
     return EXIT_SUCCESS;
-}
-catch ( std::exception &e )
-{
+  } catch (std::exception &e) {
     std::cerr << "Found an exception with '" << e.what() << "'." << std::endl;
     return EXIT_FAILURE;
-}
-catch ( ... )
-{
+  } catch (...) {
     std::cerr << "Found an unknown exception." << std::endl;
     return EXIT_FAILURE;
+  }
 }
